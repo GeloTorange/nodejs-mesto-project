@@ -19,6 +19,7 @@ export const getUser = async (req: RequestAndUser, res: Response, next: NextFunc
     if (!user) {
       throw new NotFoundError('Пользователь не найден');
     }
+    res.status(200).send(user);
   })
   .catch(next);
 
@@ -43,7 +44,13 @@ export const createUser = async (req: Request, res: Response, next: NextFunction
       email,
       password: hash,
     });
-    res.status(201).send(user);
+    res.status(201).send({
+      _id: user._id,
+      email: user.email,
+      name: user.name,
+      about: user.about,
+      avatar: user.avatar,
+    });
   } catch (error) {
     if ((error as MongoServerError).code === 11000) {
       next(new DuplicateError('Такой email уже зарегистрирован'));
