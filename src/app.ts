@@ -1,11 +1,17 @@
-import express, { Request, Response, NextFunction } from 'express';
+import express from 'express';
 import mongoose from 'mongoose';
 import router from './router';
-import { RequestAndUser } from './interfaces/RequestAndUser';
+import { createUser, login } from './controllers/usersControllers';
+import auth from './middlewares/auth';
+import { requestLogger, errorLogger } from './middlewares/logger';
+import error from './middlewares/error';
+import { loginValidator, userValidator } from './middlewares/validators';
 
 const PORT = 3000;
 
 const app = express();
+
+app.use(express.urlencoded({ extended: false }));
 app.use(express.json());
 
 const connectToDb = async () => {
@@ -18,26 +24,17 @@ const connectToDb = async () => {
 
 connectToDb();
 
-app.use((req: RequestAndUser, res: Response, next: NextFunction) => {
-  req.user = {
-    _id: '68ac8e8d97cd1d7e23e99d09',
-  };
+app.use(requestLogger);
 
-  next();
-});
+app.post('/signin', loginValidator, login);
+app.post('/signup', userValidator, createUser);
+
+app.use(auth);
 
 app.use('/', router);
 
-app.use((err: { status: number, message: string }, req: Request, res: Response) => {
-  const { status = 500, message } = err;
+app.use(errorLogger);
 
-  res
-    .status(status)
-    .send({
-      message: status === 500
-        ? 'На сервере произошла ошибка'
-        : message,
-    });
-});
+app.use(error);
 
 app.listen(PORT);

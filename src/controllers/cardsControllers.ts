@@ -3,6 +3,7 @@ import { Card } from '../models';
 import BadRequestError from '../errors/BadRequestError';
 import NotFoundError from '../errors/NotFoundError';
 import { RequestAndUser } from '../interfaces/RequestAndUser';
+import ForbiddenError from '../errors/ForbiddenError';
 
 export const getAllCards = async (req: Request, res: Response, next: NextFunction) => Card
   .find({})
@@ -24,12 +25,15 @@ export const createCard = async (req: RequestAndUser, res: Response, next: NextF
   }
 };
 
-export const deleteCard = async (req: Request, res: Response, next: NextFunction) => {
+export const deleteCard = async (req: RequestAndUser, res: Response, next: NextFunction) => {
   try {
     const { cardId } = req.params;
     const card = await Card.findOneAndDelete({ _id: cardId });
     if (!card) {
       throw new NotFoundError('Карточка с указанным _id не найдена');
+    }
+    if (req.user?._id !== card.owner.toString()) {
+      throw new ForbiddenError('Нет доступа');
     }
     res.status(200).send(card);
   } catch (error) {

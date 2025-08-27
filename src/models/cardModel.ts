@@ -18,6 +18,10 @@ const cardSchema = new Schema<ICard>({
   link: {
     type: String,
     required: [true, 'Поле "link" должно быть заполнено'],
+    validate: {
+      validator: (url: string) => /^https?:\/\/(www\.)?[a-zA-Z0-9-]+(\.[a-zA-Z]{2,})([-._~:/?#[\]@!$&'()*+,;=]*)#?$/.test(url),
+      message: 'Некорректный формат ссылки',
+    },
   },
   owner: {
     type: Schema.Types.ObjectId,

@@ -43,6 +43,11 @@
           {
             "allow": ["_id"]
           }
+        ],
+        "no-unused-vars": [
+          "error", {
+            "args": "none"
+          }
         ]
     }
 }
